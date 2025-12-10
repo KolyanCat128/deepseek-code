@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { startInteractiveShell } from './interactive.js';
 import { Config } from './config.js';
 import { DeepSeekClient } from './utils/deepseek-client.js';
 import { Logger } from './utils/logger.js';
@@ -15,9 +16,30 @@ program
   .description('DeepSeek Code CLI - AI-powered code analysis and generation')
   .version('1.0.0');
 
+/* ─────────────────────────────────────────────
+   🟦 INTERACTIVE MODE
+   deepseek interactive
+   deepseek i
+   or simply: deepseek
+───────────────────────────────────────────── */
+program
+  .command('interactive')
+  .alias('i')
+  .description('Start interactive shell mode')
+  .action(async () => {
+    await startInteractiveShell();
+  });
+
+/* ─────────────────────────────────────────────
+   🟦 CONFIG COMMAND
+───────────────────────────────────────────── */
 program
   .command('config <apiKey>')
-  .option('-m, --model <model>', 'Model to use (deepseek-r1, deepseek-coder, deepseek-chat)', 'deepseek-r1')
+  .option(
+    '-m, --model <model>',
+    'Model to use (deepseek-r1, deepseek-coder, deepseek-chat)',
+    'deepseek-r1'
+  )
   .description('Configure API key and model')
   .action(async (apiKey: string, options: any) => {
     try {
@@ -32,6 +54,9 @@ program
     }
   });
 
+/* ─────────────────────────────────────────────
+   🟦 ANALYZE COMMAND
+───────────────────────────────────────────── */
 program
   .command('analyze <file>')
   .description('Analyze code in a file')
@@ -39,10 +64,9 @@ program
     try {
       const config = await Config.load();
       if (!config) {
-        Logger.error('No configuration found. Please run: deepseek config <apiKey>');
+        Logger.error('No configuration found. Run: deepseek config <apiKey>');
         process.exit(1);
       }
-
       const client = new DeepSeekClient(config.getConfig());
       await analyzeCommand(filePath, client);
     } catch (error: any) {
@@ -51,9 +75,12 @@ program
     }
   });
 
+/* ─────────────────────────────────────────────
+   🟦 GENERATE COMMAND
+───────────────────────────────────────────── */
 program
   .command('generate <description>')
-  .option('-l, --language <language>', 'Programming language (javascript, python, etc.)', 'javascript')
+  .option('-l, --language <language>', 'Language (js, python, etc.)', 'javascript')
   .option('-o, --output <path>', 'Output file path')
   .option('-c, --context <context>', 'Additional context')
   .description('Generate code based on description')
@@ -61,18 +88,26 @@ program
     try {
       const config = await Config.load();
       if (!config) {
-        Logger.error('No configuration found. Please run: deepseek config <apiKey>');
+        Logger.error('No configuration found. Run: deepseek config <apiKey>');
         process.exit(1);
       }
-
       const client = new DeepSeekClient(config.getConfig());
-      await generateCommand(description, options.language, options.output, options.context, client);
+      await generateCommand(
+        description,
+        options.language,
+        options.output,
+        options.context,
+        client
+      );
     } catch (error: any) {
       Logger.error(`Failed to generate: ${error.message}`);
       process.exit(1);
     }
   });
 
+/* ─────────────────────────────────────────────
+   🟦 EXPLAIN COMMAND
+───────────────────────────────────────────── */
 program
   .command('explain <file>')
   .description('Explain code in a file')
@@ -80,10 +115,9 @@ program
     try {
       const config = await Config.load();
       if (!config) {
-        Logger.error('No configuration found. Please run: deepseek config <apiKey>');
+        Logger.error('No configuration found. Run: deepseek config <apiKey>');
         process.exit(1);
       }
-
       const client = new DeepSeekClient(config.getConfig());
       await explainCommand(filePath, client);
     } catch (error: any) {
@@ -92,6 +126,9 @@ program
     }
   });
 
+/* ─────────────────────────────────────────────
+   🟦 REFACTOR COMMAND
+───────────────────────────────────────────── */
 program
   .command('refactor <file>')
   .option('-o, --output <path>', 'Output file path')
@@ -101,10 +138,9 @@ program
     try {
       const config = await Config.load();
       if (!config) {
-        Logger.error('No configuration found. Please run: deepseek config <apiKey>');
+        Logger.error('No configuration found. Run: deepseek config <apiKey>');
         process.exit(1);
       }
-
       const client = new DeepSeekClient(config.getConfig());
       await refactorCommand(filePath, options.output, options.goals, client);
     } catch (error: any) {
@@ -113,8 +149,17 @@ program
     }
   });
 
+/* ─────────────────────────────────────────────
+   🟦 PARSE
+───────────────────────────────────────────── */
 program.parse(process.argv);
 
+/* ─────────────────────────────────────────────
+   🟦 IF NO ARGS → START INTERACTIVE MODE
+───────────────────────────────────────────── */
 if (!process.argv.slice(2).length) {
-  program.outputHelp();
+  startInteractiveShell().catch((error) => {
+    Logger.error(`Fatal error: ${error.message}`);
+    process.exit(1);
+  });
 }
