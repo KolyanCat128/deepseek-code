@@ -1,0 +1,39 @@
+{
+  "name": "deepseek-code",
+  "version": "1.0.0",
+  "description": "CLI tool for code analysis and generation using DeepSeek API",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "deepseek": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "vitest"
+  },
+  "keywords": [
+    "deepseek",
+    "code-analysis",
+    "ai",
+    "cli"
+  ],
+  "author": "KolyanCat128",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.3",
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "ora": "^6.3.1",
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.0",
+    "ts-node": "^10.9.1",
+    "@types/node": "^20.4.0",
+    "@types/fs-extra": "^11.0.1",
+    "vitest": "^0.34.6"
+  }
+}
